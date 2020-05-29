@@ -1,8 +1,5 @@
 
-
 <?php
-
-
 /// recieve post request /////
 
 
@@ -35,8 +32,6 @@ foreach($_REQUEST as $key => $value){
 }//for each
 
 
-
-
 /// BEGIN CONNECTION //////
 
 $con=mysqli_connect("ix-dev:3267","group6user","hello1","my_test_db");
@@ -49,56 +44,70 @@ $result = mysqli_query($con,"SELECT * FROM names");
 
 while($row = mysqli_fetch_array($result)) {
 	$a_name = $row['first_name'];
-	echo $a_name;
+	//echo $a_name;
 }
+
+//echo "<br>";
+
+/// ^^^ some tests from dummy mysql table ///// 
+
+
 
 /// begin inserting
+/// check if set  then continue
 
-$sql = "INSERT INTO gsdata (ID, date, time, latitude, longitude)
-VALUES ('$id', '$date', '$time', 22.22254, 25.21265)";
+if (!empty($id)){
 
-if ($con->query($sql) === TRUE) {
-  echo "New record created successfully";
-} else {
-  echo "Error: " . $sql . "<br>" . $con->error;
+	$sql = "INSERT INTO gsdata_strings (ID, time, latitude, longitude)
+	VALUES ('$id', '$time', '$latitude', '$longitude')";
+
+	if ($con->query($sql) === TRUE) {
+	  echo "New record created successfully";
+	} else {
+	  echo "Error: " . $sql . "<br>" . $con->error;
+	}
+
+	//// end inserting 
+	echo "<br>";
+
+	//// after insert
+}
+else{
+	//echo "TESTING MODE";
+	//echo "<br>";
 }
 
-//// end inserting 
-echo "<br>";
 
-//// after insert
+if (empty($id)){ 
+	$result = mysqli_query($con,"SELECT * FROM gsdata_strings");
 
+	$array_for_jason = array();
+	while($row = mysqli_fetch_array($result)) {
+		$array_for_jason[] = $row;
+		$a_ID = $row['ID'];
+		$date = $row['date'];
+		$time = $row['time'];
+		$latitude = $row['latitude'];
+		$longitude = $row['longitude'];
+		//echo $a_ID . $date . $time . $latitude . $longitude;
+	}
+	$handle = fopen("file.txt", "w");
+	    fwrite($handle, json_encode($array_for_jason));
+	    fclose($handle);
 
-$result = mysqli_query($con,"SELECT * FROM gsdata");
+	    header('Content-Type: application/octet-stream');
+	    header('Content-Disposition: attachment; filename='.basename('file.txt'));
+	    header('Expires: 0');
+	    header('Cache-Control: must-revalidate');
+	    header('Pragma: public');
+	    header('Content-Length: ' . filesize('file.txt'));
+	    readfile('file.txt');
+	    exit;
 
-while($row = mysqli_fetch_array($result)) {
-	$a_ID = $row['ID'];
-	$date = $row['date'];
-	$time = $row['time'];
-	$latitude = $row['latitude'];
-	$longitude = $row['longitude'];
-	echo $a_ID . $date . $time . $latitude . $longitude;
+	//echo "<br>";
+
 }
 
-echo "<br>";
-
-$unit = "not_set";
-
-echo "Hello World<br>"; 
-
-foreach($_REQUEST as $key => $value){
-
-	if($key =="message"){
-		$message = $value;
-	}
-	if($key =="pass"){
-		$pass = $value;
-	}
-	
-}//for each
-
-echo "the message: $message <br>";
-echo "the pass: $pass <br>";
 
 ?> 
 
