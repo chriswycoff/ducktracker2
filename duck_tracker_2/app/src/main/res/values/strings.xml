@@ -2,4 +2,5 @@
     <string name="app_name">duck_tracker_2</string>
     <string name="facts_button">COVID FACTS</string>
     <string name="submit_data_button">Submit Data</string>
+    <string name="connection_status"> Connecting </string>
 </resources>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,6 +17,17 @@
         android:ems="10"
         android:inputType="textPersonName"
         android:autofillHints="" />
+
+    <EditText
+        android:id="@+id/connection_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp"
+        android:layout_marginLeft="250dp"
+        android:layout_marginTop="400dp"
+        android:autofillHints=""
+        android:ems="10"
+        android:inputType="textPersonName" />
 
     <EditText
         android:id="@+id/longitude_string"
@@ -46,6 +58,13 @@
         android:layout_marginTop="600dp"
         android:text="@string/facts_button" />
 
+    <ImageView
+        android:id="@+id/connection_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="300dp"
+        android:layout_marginTop="400dp"
+        app:srcCompat="@drawable/read_dot" />
 
 
 </FrameLayout>

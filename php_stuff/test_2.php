@@ -82,17 +82,19 @@ if (empty($id)){
 	$result = mysqli_query($con,"SELECT * FROM gsdata_strings");
 
 	$array_for_jason = array();
+	$handle = fopen("file.txt", "w");
 	while($row = mysqli_fetch_array($result)) {
 		$array_for_jason[] = $row;
 		$a_ID = $row['ID'];
-		$date = $row['date'];
+		//$date = $row['date'];
 		$time = $row['time'];
 		$latitude = $row['latitude'];
 		$longitude = $row['longitude'];
+		fwrite($handle, $a_ID ."\t". $time ."\t". $latitude ."\t". $longitude ."\n");
 		//echo $a_ID . $date . $time . $latitude . $longitude;
 	}
-	$handle = fopen("file.txt", "w");
-	    fwrite($handle, json_encode($array_for_jason));
+	//$handle = fopen("file.txt", "w");
+	   // fwrite($handle, json_encode($array_for_jason));
 	    fclose($handle);
 
 	    header('Content-Type: application/octet-stream');
