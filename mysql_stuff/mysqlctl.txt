@@ -1,0 +1,261 @@
+#! /bin/sh 
+# this script performs all of the functions required of a student mysql server
+# installation.
+#
+# $Id: mysqlctl,v 1.27 2016/10/20 18:55:21 sullivan Exp $
+#
+PATH=/local/bin:/usr/bin:/bin:/usr/ucb
+
+# use whoami to deal with sudo
+user=`whoami`
+homedir=`getent passwd $user | cut -d: -f6`
+hostname=`hostname`
+
+ldata=$homedir/mysql-data
+[ -n "$MYSQL_HOME" ] && ldata=$MYSQL_HOME
+
+usage() {
+	printf "Usage: $0 {install|start|stop|status|move}\n"
+	printf "\tinstall\t- setup initial mysqld database\n"
+	printf "\tstart\t- start mysqld database\n"
+	printf "\tstop\t- stop mysqld database\n"
+	printf "\tstatus\t- check status of mysqld database\n"
+	printf "\tmove\t- move mysqld database to current server\n"
+	exit 1
+}
+
+install() {
+  printf "This script is designed to setup an individual mysql server\n"
+
+  # Create database directories mysql & test
+  if test -d $ldata; then 
+    printf "Mysql data directory $ldata already exists.\n"
+    printf "Why are you running the \"mysqlctl install\" script?\n"
+    exit 1;
+  fi
+
+  stty -echo
+  i=1
+  while [ 1 ]; do
+    printf "Database password (DO NOT use your unix password): "
+    read auth
+    printf "\nVerify password: "
+    read auth2
+    [ "$auth" = "$auth2" ] && break
+    printf "\nPasswords do NOT match, try again.\n"
+    i=`expr $i + 1`
+    if [ $i -gt 3 ]; then
+      printf "Too many failures.\n"
+      stty echo
+      exit 2
+    fi
+  done
+  stty echo
+  
+  trap "/bin/rm -rf $ldata >/dev/null 2>&1; exit 1"  1 2 15
+
+  if [ -z "$1" ]; then
+      mysqldir=`ls -1d /local/apps/mysql?? | tail -1`
+  else
+      mysqldir=/local/apps/mysql$1
+  fi
+  [ -r "$mysqldir/install_config" ] && . $mysqldir/install_config
+  mysqld=$mysqldir/bin/mysqld
+
+  version=`expr "$mysqldir" : '.*\(..\)$'`
+
+  [ $version -eq 56 ] && mkdir $ldata
+  [ $version -gt 55 ] && args="--default-tmp-storage-engine=myisam $args"
+  [ $version -gt 54 ] && args="--default-storage-engine=myisam $args"
+  printf "\nInstalling all prepared tables\n"
+  if [ $version -gt 56 ]; then
+      $mysqld $defaults --initialize-insecure --basedir=$mysqldir --datadir=$ldata $args > $homedir/mysql-install.log 2>&1
+      sed "s/#USER#/$user/;s/#AUTH#/$auth/" < /cs/lib/mysql-install-5.7 > $ldata/authconfig
+      rc=`$mysqld $defaults --basedir=$mysqldir --datadir=$ldata --init-file=$ldata/authconfig $args >> $homedir/mysql-install.log 2>&1`
+      rm $ldata/authconfig
+      mv $homedir/mysql-install.log $ldata/install.log
+  else
+      mysqld="$mysqld $defaults --bootstrap --skip-innodb --basedir=$mysqldir --datadir=$ldata $args"
+      rc=`(echo use mysql\;; cat $mysqldir/share/mysql_system_tables.sql $mysqldir/share/mysql_system_tables_data.sql; sed "s/#USER#/$user/;s/#AUTH#/$auth/" < /cs/lib/mysql_local) | $mysqld > $ldata/install.log 2>&1`
+   fi
+
+  if ($rc)
+  then
+    echo $version > "$ldata/version"
+    exit 0
+  else
+    printf "Installation of grant tables failed!\n\n"
+    printf "Examine the logs in $ldata for more information.\n\n"
+    printf "The latest information about MySQL is available on the web at: http://www.mysql.com\n"
+    # /bin/rm -rf $ldata >/dev/null 2>&1
+    exit 2
+  fi
+}
+
+config_file() {
+    cat > .my.cnf <<-End_of_Text
+
+	# This will be passed to all mysql clients
+	[client]
+	port	=	3602
+	socket	=	$ldata/mysqld_sock
+	host	=	$hostname
+	#password	=	my_password
+
+	# The MySQL server
+	[mysqld]
+	port	=	3602
+	socket	=	$ldata/mysqld_sock
+	datadir	=	$ldata
+	pid-file=	$ldata/$host.pid
+	# default is to only bind localhost
+	# bind-address	=	0.0.0.0
+	# for all mysql versions
+	skip-innodb
+	# for mysql-5.5 and above
+	default-storage-engine=myisam
+	# for mysql-5.6 and above
+	default-tmp-storage-engine=myisam
+
+	# uncomment the following line for logging
+	#general-log
+End_of_Text
+}
+
+startit() {
+  ##
+  ## verify no other mysqlds running
+  ##
+  procs=`pgrep -u $user -d " "  mysqld$`
+  if [ $? = 0 ]; then
+    printf "The following mysqld processes are already running $procs.\n"
+    printf "They must be killed before you can start a new one.\n"
+    exit 1
+  fi
+  cd $homedir
+  [ -f .my.cnf ] || config_file
+  [ -f $ldata/$hostname.pid ] && rm $ldata/$hostname.pid
+
+  ##
+  ## mysql5 appears to have a reliable .pid file
+  ##
+  ## -- something happened with the change to IPv6 stack
+  ## -- it allows old connections and new connections to overlap
+  port=`grep "^port" $homedir/.my.cnf | tail -1 | cut -f3`
+  while [ "`netstat -an | grep -c \".$port \"`" -gt 0 ]; do
+    oport=$port
+    rand=`random 3`
+    port=`expr 3000 + $rand`
+    mv $homedir/.my.cnf $homedir/.my.cnf.orig
+    sed '/port/s;=	....;=	'$port';' < $homedir/.my.cnf.orig > $homedir/.my.cnf
+    printf "Port $oport busy, trying $port\n"
+  done
+  $mysqld --pid-file=$ldata/$hostname.pid $* >/dev/null 2>&1 &
+  sleep 8
+  printf "Started mysqld on port $port\n"
+  exit 0
+}
+
+stopit() {
+  cd $homedir
+  if [ ! -s $ldata/$hostname.pid ]; then
+    printf "Any mysqld processes running on this machine were not\n"
+    printf "created by \"mysqlctl start\".  You must stop them by hand.\n"
+    exit 1
+  fi
+  pid=`cat $ldata/$hostname.pid`
+  printf "Stopping mysqld process $pid\n"
+  kill $pid
+  exit 0
+}
+
+statusexit() {
+	# check for other daemons on other hosts
+	if [ `ls $ldata/*.pid 2>/dev/null | grep -v $hostname | wc -w` -gt 0 ]; then
+		printf "\ncheck these hosts for other mysql daemons:\n"
+		ls $ldata/*.pid|sed 's;.*/\(.*\)\.pid;\1;'|grep -v "^$hostname"
+	fi
+	exit $1
+}
+
+status() {
+	cd $homedir
+	stopped=0
+	if [ ! -f $homedir/.my.cnf ]; then
+		printf "no configuration file, so no running server\n"
+		exit 1
+	fi
+	port=`grep "^port" $homedir/.my.cnf | tail -1 | cut -f3`
+	if [ ! -f $ldata/$hostname.pid ]; then
+		printf "no .pid file for $hostname:$port\n"
+		statusexit 1
+	fi
+	pid=`cat $ldata/$hostname.pid`
+	ps -p $pid > /dev/null 2>&1
+	if [ $? = 1 ]; then
+		printf "mysqld server on $hostname:$port (pid $pid) is dead\n"
+		statusexit 3
+	fi
+	/local/bin/mysqladmin --connect_timeout=5 ping >/dev/null 2>&1
+	if [ $? = 1 ]; then
+		printf "server on $hostname:$port (pid $pid) is hung\n"
+		statusexit 4
+	fi
+	printf "mysqld (pid $pid) listening on $hostname:$port\n"
+	statusexit 0
+}
+
+move() {
+	cd $homedir
+	if [ ! -f $homedir/.my.cnf ]; then
+		printf "no configuration file, so nothing to move\n"
+		exit 1
+	fi
+	mv .my.cnf .my.cnf.orig
+	old=`egrep "^host" .my.cnf.orig`
+	old=`expr "$old" : '.*	\(.*\)'`
+	printf "moving mysqld server from %s to %s\n" $old $hostname
+	sed '/host/s;=	.*;=	'$hostname';' < $homedir/.my.cnf.orig > $homedir/.my.cnf
+	exit 0
+}
+
+#
+#  Main application
+#
+[ "$1" ] || usage
+expr "$hostname" : '^\(ix*\)' > /dev/null
+if [ $? -gt 0 ]; then
+	echo Please login to one of the \"ix\" machines, and run this command from there.
+	exit 1
+fi
+
+[ "$1" = "install" ] && install $2
+
+if [ ! -d "$ldata" ]; then
+    echo "You don't have a mysqld installation, Please run 'mysqlctl install'."
+    exit 1
+fi
+# the oldest version, doesn't have a version number
+if [ ! -r "$ldata/version" ]; then
+    echo 50 > "$ldata/version"
+fi
+
+version=`cat "$ldata/version"`
+mysqldir=/local/apps/mysql$version
+mysqld=$mysqldir/bin/mysqld
+
+latest=`ls -1d /local/apps/mysql*| tail -1 | cut -c 18-19`
+if [ $version -lt $latest ]; then
+    printf "\nYou are using an old [$version] version of mysql, the latest is $latest\n\n"
+fi
+
+if [ ! -d $mysqldir ]; then
+    printf "\nYour version of mysql, $version, is no longer installed.\n\n"
+    exit 1
+fi
+    
+[ "$1" = start ] && startit
+[ "$1" = stop ] && stopit
+[ "$1" = status ] && status
+[ "$1" = move ] && move
+usage
