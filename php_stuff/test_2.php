@@ -28,6 +28,10 @@ foreach($_REQUEST as $key => $value){
 		$longitude = $value;
      
 	}
+	if($key =="tal"){
+		$tal = $value;
+     
+	}
 
 }//for each
 
@@ -58,8 +62,8 @@ while($row = mysqli_fetch_array($result)) {
 
 if (!empty($id)){
 
-	$sql = "INSERT INTO gsdata_strings (ID, time, latitude, longitude)
-	VALUES ('$id', '$time', '$latitude', '$longitude')";
+	$sql = "INSERT INTO gsdata_strings (ID, time, latitude, longitude, tal, date)
+	VALUES ('$id', '$time', '$latitude', '$longitude', '$tal', '$date')";
 
 	if ($con->query($sql) === TRUE) {
 	  echo "New record created successfully";
@@ -86,11 +90,12 @@ if (empty($id)){
 	while($row = mysqli_fetch_array($result)) {
 		$array_for_jason[] = $row;
 		$a_ID = $row['ID'];
-		//$date = $row['date'];
+		$date = $row['date'];
 		$time = $row['time'];
 		$latitude = $row['latitude'];
 		$longitude = $row['longitude'];
-		fwrite($handle, $a_ID ."\t". $time ."\t". $latitude ."\t". $longitude ."\n");
+		$tal = $row['tal'];
+		fwrite($handle, $a_ID ."\t". $date ."\t". $time ."\t". $latitude ."\t". $longitude ."\t". $tal ."\n" );
 		//echo $a_ID . $date . $time . $latitude . $longitude;
 	}
 	//$handle = fopen("file.txt", "w");

@@ -41,14 +41,18 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    Integer delay = 15000; // (milliseconds)
+    Integer delay = 15000; // (milliseconds) // for 5 minutes change to : 300000 milliseconds
 
+    Integer tal = 0;
     Button submit_data_button;
     Button facts_button;
 
     EditText latitude_text;
     EditText longitude_text;
     EditText connection_text;
+
+    String last_latitutde;
+    String last_longitude;
 
     private final long MIN_TIME = 1000;
     private final long MIN_DIST = 5;
@@ -86,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
         connection_text = findViewById(R.id.connection_status);
         connection_text.setText(connection_off);
 
+        last_latitutde = latitude_text.getText().toString();
+        last_longitude = longitude_text.getText().toString();
+
         final String the_id = getUUID();
 
         ImageView connect_img = (ImageView) findViewById(R.id.connection_image);
@@ -104,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationChanged(Location location) {
                 try {
                     // changes the lat/long text boxes
-                    String lat = String.format(Locale.US,"%.5f",location.getLatitude());
-                    String longt = String.format(Locale.US,"%.5f",location.getLongitude());
+                    String lat = String.format(Locale.US,"%.3f",location.getLatitude());
+                    String longt = String.format(Locale.US,"%.3f",location.getLongitude());
                     latitude_text.setText(lat);
                     longitude_text.setText(longt);
                 } catch (Exception e) {
@@ -188,7 +195,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
         ////
 
 }
@@ -198,6 +204,22 @@ public class MainActivity extends AppCompatActivity {
     public void my_post_request(final String password, final String id,
                                 final String date, final String time, final String latitude,
                                 final String longitude){
+
+
+        if (!last_latitutde.equals(latitude_text.getText().toString())){
+            tal = 0;
+        }
+        else if (!last_latitutde.equals(latitude_text.getText().toString())){
+            tal = 0;
+        }
+        else{
+            tal += 5;
+        }
+
+
+
+
+
         String url = "https://ix.cs.uoregon.edu/~cwycoff/ix_dev_testing/test_2.php";
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
@@ -235,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
                 params.put("time", time);
                 params.put("latitude", latitude);
                 params.put("longitude", longitude);
+                params.put("tal", tal.toString());
                 return params;
             }
         };
@@ -243,16 +266,23 @@ public class MainActivity extends AppCompatActivity {
         ImageView connect_img = (ImageView) findViewById(R.id.connection_image);
         connect_img.setImageResource(R.drawable.green_dot);
         connection_text.setText(connection_on);
+
+        last_latitutde = latitude_text.getText().toString();
+        last_longitude = longitude_text.getText().toString();
+
     }
 
     public void test_get_location(String the_id) {
 
         try {
             Date currentTime = Calendar.getInstance().getTime();
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-            String timeString = dateFormat.format(currentTime);
+            DateFormat dateFormat1 = new SimpleDateFormat("HH:mm:ss", Locale.US);
+            DateFormat dateFormat2 = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
-            my_post_request("fakepass", the_id, "fakedate",
+            String timeString = dateFormat1.format(currentTime);
+            String dateString = dateFormat2.format(currentTime);
+            // yyyy-MM-dd HH:mm:ss"
+            my_post_request("fakepass", the_id, dateString,
                     timeString, latitude_text.getText().toString(), longitude_text.getText().toString());
         }
         catch (Exception e){
