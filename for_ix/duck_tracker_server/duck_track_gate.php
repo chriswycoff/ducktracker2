@@ -46,8 +46,6 @@ $the_database = $my_array['database'];
 
 $the_port = $my_array['port'];
 
-$the_table = $my_array['table']
-
 $con=mysqli_connect($the_port, $the_username, $the_password ,$the_database);
 
 if (mysqli_connect_errno()) {
@@ -60,7 +58,7 @@ if (mysqli_connect_errno()) {
 
 if (!empty($id)){
 
-	$sql = "INSERT INTO '$the_table' (ID, time, latitude, longitude, tal, date)
+	$sql = "INSERT INTO duck_table (ID, time, latitude, longitude, tal, date)
 	VALUES ('$id', '$time', '$latitude', '$longitude', '$tal', '$date')";
 
 	if ($con->query($sql) === TRUE) {
@@ -81,7 +79,7 @@ else{
 
 
 if (empty($id)){ 
-	$result = mysqli_query($con,"SELECT * FROM '$the_table'");
+	$result = mysqli_query($con,"SELECT * FROM duck_table");
 
 	$array_for_jason = array();
 	$handle = fopen("file.txt", "w");
