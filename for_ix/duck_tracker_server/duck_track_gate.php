@@ -36,7 +36,20 @@ foreach($_REQUEST as $key => $value){
 
 /// BEGIN CONNECTION //////
 
-$con=mysqli_connect("ix-dev:3267","group6user","hello1","my_test_db");
+$my_array = parse_ini_file("duck_tracker.ini");
+
+$the_username = $my_array['dbuser'];
+
+$the_password = $my_array['password'];
+
+$the_database = $my_array['database'];
+
+$the_port = $my_array['port'];
+
+echo "<br> hello";
+echo $the_username . $the_password . $the_database . $the_port . "hi";
+
+$con=mysqli_connect($the_port, $the_username, $the_password ,$the_database);
 
 if (mysqli_connect_errno()) {
   echo "Failed to connect to MySQL: " . mysqli_connect_error();
