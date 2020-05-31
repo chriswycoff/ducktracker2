@@ -46,25 +46,12 @@ $the_database = $my_array['database'];
 
 $the_port = $my_array['port'];
 
-echo "<br> hello";
-echo $the_username . $the_password . $the_database . $the_port . "hi";
-
 $con=mysqli_connect($the_port, $the_username, $the_password ,$the_database);
 
 if (mysqli_connect_errno()) {
   echo "Failed to connect to MySQL: " . mysqli_connect_error();
 }
 
-$result = mysqli_query($con,"SELECT * FROM names");
-
-while($row = mysqli_fetch_array($result)) {
-	$a_name = $row['first_name'];
-	//echo $a_name;
-}
-
-//echo "<br>";
-
-/// ^^^ some tests from dummy mysql table ///// 
 
 /// begin inserting
 /// check if set  then continue
@@ -81,7 +68,7 @@ if (!empty($id)){
 	}
 
 	//// end inserting 
-	echo "<br>";
+
 
 	//// after insert
 }
