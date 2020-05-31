@@ -9,3 +9,6 @@ echo "$var1" "$var2"
 
 
 echo "USER" "$dbuser" "PASSWORD" "$password" 
+
+
+# mysql 
