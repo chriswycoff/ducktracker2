@@ -41,23 +41,26 @@ public class MainActivity extends AppCompatActivity {
 
     // BEGIN declaration of global variables //
 
+    // change this to true if having trouble connecting or sending data
+    // app will print messages to the screen indicating any error codes
+    // from the mysql database
     Boolean DEBUG = false;
 
     Integer delay = 300000; // (milliseconds) // for 5 minutes change to : 300000 milliseconds
     // TODO: for testing a more frequent incrementing see lines 91 and 92
 
-    Integer tal = 0;
+    Integer tal = 0; // time at location
     Button submit_data_button;
 
     EditText latitude_text;
     EditText longitude_text;
     EditText connection_text;
 
-    String last_latitutde;
-    String last_longitude;
+    String last_latitutde; // for time at location logic
+    String last_longitude; // for time at location logic
 
-    private final long MIN_TIME = 1000;
-    private final long MIN_DIST = 5;
+    private final long MIN_TIME = 1000; // value for location manager
+    private final long MIN_DIST = 5; // value for location manager
 
 
     private LocationListener locationLister;
@@ -70,7 +73,9 @@ public class MainActivity extends AppCompatActivity {
     //TODO continued: specific thing to change is "username": please see installation instructions for setting up
     //TODO continued: the directory containing the 3 server files and how to execute the configuration script
     //TODO continued: SEE SECTION:
-    String url = "https://ix.cs.uoregon.edu/~cwycoff/ix_dev_testing/test_2.php"; // just in case this is a live server
+    // just in case this is a live server
+    String url = "https://ix.cs.uoregon.edu/~<YOURUSERNAMEHERE>/duck_tracker_server/duck_track_gate.php"; // change this
+    // just in case this string is a live server "https://ix.cs.uoregon.edu/~dbz/duck_tracker_server/duck_track_gate.php"
     // example -> //url = "https://ix.cs.uoregon.edu/~nhenders/duck_tracker_server/duck_track_gate.php";
 
     // END declaration of global variables //
@@ -90,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         return(id_UUID.toString());
     }
 
-
+    // onCreate gets called when the application is first opened
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // uncomment the following to test every 15 seconds !!!
