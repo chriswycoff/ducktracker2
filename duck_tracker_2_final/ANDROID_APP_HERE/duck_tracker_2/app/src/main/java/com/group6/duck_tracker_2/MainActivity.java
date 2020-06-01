@@ -70,13 +70,13 @@ public class MainActivity extends AppCompatActivity {
     String connection_on = "CONNECTED OK";
 
     //TODO: Change url string to <"https://ix.cs.uoregon.edu/~username/duck_tracker_server/duck_track_gate.php">
-    //TODO continued: specific thing to change is "username": please see installation instructions for setting up
+    //TODO continued: specific thing to change is "username": please see Installation_Instructions for setting up
     //TODO continued: the directory containing the 3 server files and how to execute the configuration script
-    //TODO continued: SEE SECTION:
-    // just in case this is a live server
+    //TODO continued: SEE SECTION 10 in Installation_Instructions:
     String url = "https://ix.cs.uoregon.edu/~<YOURUSERNAMEHERE>/duck_tracker_server/duck_track_gate.php"; // change this
-    // just in case this string is a live server "https://ix.cs.uoregon.edu/~dbz/duck_tracker_server/duck_track_gate.php"
-    // example -> //url = "https://ix.cs.uoregon.edu/~nhenders/duck_tracker_server/duck_track_gate.php";
+    // just in case the following string is a live server:
+    // example -> //
+    // String url = "https://ix.cs.uoregon.edu/~cwycoff/duck_tracker_server/duck_track_gate.php";
 
     // END declaration of global variables //
 
@@ -232,10 +232,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        //TODO: Change url string to <"https://ix.cs.uoregon.edu/~username/duck_tracker_server/duck_track_gate.php">
-        //String url;
-        //url = "https://ix.cs.uoregon.edu/~cwycoff/ix_dev_testing/test_2.php"; // just in case
-        // example -> //url = "https://ix.cs.uoregon.edu/~nhenders/duck_tracker_server/duck_track_gate.php";
+
+
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>() {
