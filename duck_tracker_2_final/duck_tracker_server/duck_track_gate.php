@@ -83,6 +83,7 @@ if (empty($id)){
 
 	$array_for_jason = array();
 	$handle = fopen("file.txt", "w");
+	fwrite($handle, "ID" ."\t". "date" ."\t". "time" ."\t". "latitude"."\t". "longitude" ."\t". "tal" ."\n" );
 	while($row = mysqli_fetch_array($result)) {
 		$array_for_jason[] = $row;
 		$a_ID = $row['ID'];
