@@ -1,0 +1,2 @@
+rootProject.name='duck_tracker_2'
+include ':app'
