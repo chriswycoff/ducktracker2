@@ -1,7 +1,7 @@
 
 <?php
 /// recieve post request /////
-
+// iterate through requests and assign variables to them
 foreach($_REQUEST as $key => $value){
 	if($key == "ID"){
 	$id = $value;
@@ -34,7 +34,7 @@ foreach($_REQUEST as $key => $value){
 
 }//for each
 
-/// BEGIN CONNECTION //////
+// grab the variables from duck_tracker.ini file //
 
 $my_array = parse_ini_file("duck_tracker.ini");
 
@@ -46,6 +46,7 @@ $the_database = $my_array['database'];
 
 $the_port = $my_array['port'];
 
+/// BEGIN CONNECTION TO MYSQL DATABASE //////
 $con=mysqli_connect($the_port, $the_username, $the_password ,$the_database);
 
 if (mysqli_connect_errno()) {
@@ -68,16 +69,13 @@ if (!empty($id)){
 	}
 
 	//// end inserting 
-
-
 	//// after insert
 }
 else{
-	//echo "TESTING MODE";
-	//echo "<br>";
+ // pass
 }
 
-
+// BEGIN logic to create the downloadable data file //
 if (empty($id)){ 
 	$result = mysqli_query($con,"SELECT * FROM duck_table");
 
@@ -93,10 +91,8 @@ if (empty($id)){
 		$longitude = $row['longitude'];
 		$tal = $row['tal'];
 		fwrite($handle, $a_ID ."\t". $date ."\t". $time ."\t". $latitude ."\t". $longitude ."\t". $tal ."\n" );
-		//echo $a_ID . $date . $time . $latitude . $longitude;
 	}
-	//$handle = fopen("file.txt", "w");
-	   // fwrite($handle, json_encode($array_for_jason));
+	
 	    fclose($handle);
 
 	    header('Content-Type: application/octet-stream');
@@ -108,7 +104,7 @@ if (empty($id)){
 	    readfile('file.txt');
 	    exit;
 
-	//echo "<br>";
+// END logic to create the downloadable data file //
 
 }
 

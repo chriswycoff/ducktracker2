@@ -3,7 +3,6 @@
 
 . duck_tracker.ini
 
-
 mysql -p -e "grant all privileges on *.* to '$dbuser'@'%' identified by '$password' ;" 
 
 mysql -u"$dbuser" -p"$password" -e "
